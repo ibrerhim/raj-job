@@ -1,303 +1,117 @@
-# Laravel RBAC API
+Laravel RBAC API
 
-A simple Role-Based Access Control (RBAC) API built with Laravel, Laravel Passport, and PostgreSQL.
 
-## Features
-
-- **Authentication**: User registration, login, logout using Laravel Passport
-- **Custom RBAC System**: Roles and permissions without third-party packages
-- **User CRUD**: Full user management with permission-based access control
-- **External API Integration**: Fetch users from JSONPlaceholder API
-- **Standardized Responses**: Consistent JSON response format
-
-## Requirements
-
-- Docker & Docker Compose
+To run this project, you only need:
+- Docker Desktop
+- Docker Compose
 - Git
 
-## Tech Stack
+Technology Stack
 
-- Laravel 12.x
-- Laravel Passport 13.x
-- PostgreSQL 15
-- PHP 8.2
-- Nginx
+- Framework: Laravel 12.x
+- Authentication: Laravel Passport 13.x
+- Database: PostgreSQL 15
+- Language: PHP 8.2
+- Server: Nginx
 
-## Installation
+Installation Guide
 
-### 1. Clone the repository
+Follow these steps to get the project up and running on your local machine.
 
-```bash
+1. Clone the repository
+Open your terminal and clone the project to your local machine.
 git clone <repository-url>
 cd <project-folder>
-```
 
-### 2. Copy environment file
-
-```bash
+2. Configure environment
+Copy the example environment file to create your own configuration.
 cp .env.example .env
-```
 
-### 3. Update `.env` with PostgreSQL settings
+set the following variables in the .env file
 
-```env
+APP_NAME="Laravel RBAC API"
+APP_ENV=local
+APP_KEY=base64:g52bkAx0+2w5LgMzWo7vdmXyn//+Gpce70d0q2kNFsI=
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
 DB_CONNECTION=pgsql
 DB_HOST=db
 DB_PORT=5432
 DB_DATABASE=rbac_api
 DB_USERNAME=laravel
 DB_PASSWORD=secret
-```
 
-### 4. Build and start Docker containers
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+SESSION_DRIVER=database
 
-```bash
+3. Configure Database
+Open the .env file and ensure the database settings match the Docker configuration (connection: pgsql, host: db, port: 5432, database: rbac_api, username: laravel, password: secret).
+
+4. Start the Application
+Build and start the Docker containers. This pulls all necessary images and sets up the environment.
 docker compose build
 docker compose up -d
-```
 
-### 5. Install dependencies (if needed)
-
-```bash
+5. Install Dependencies
+Run composer inside the container to install PHP dependencies.
 docker compose exec app composer install
-```
 
-### 6. Generate application key
-
-```bash
+6. Generate App Key
+Generate the application encryption key.
 docker compose exec app php artisan key:generate
-```
 
-### 7. Run migrations and seeders
-
-```bash
+7. Setup Database
+Run the migrations to create the database tables and seed them with default roles and users.
 docker compose exec app php artisan migrate --seed
-```
 
-### 8. Install Passport
-
-```bash
+8. Install Passport
+Initialize Laravel Passport to generate the encryption keys for API tokens.
 docker compose exec app php artisan passport:install
-```
 
-When prompted:
-- Select "yes" to run migrations
-- Select "yes" to create personal access client
-- Select "0" for user provider
+Select "yes" when asked to run migrations (if prompted) and to create the personal access client. Enter "0" for the user provider.
 
-## API Base URL
+The API is now live at http://localhost:8000/api
 
-```
-http://localhost:8000/api
-```
+Default Test Users
 
-## Default Users (from seeders)
+The database is pre-populated with these users for testing purposes. All use the password: password123
 
-| Role | Email | Password |
-|------|-------|----------|
-| Super Admin | superadmin@example.com | password123 |
-| Admin | admin@example.com | password123 |
-| Manager | manager@example.com | password123 |
-| User | user@example.com | password123 |
+Super Admin (superadmin@example.com) - Full access to everything
+Admin (admin@example.com) - Administrative access
+Manager (manager@example.com) - Can manage users (create, read, update)
+User (user@example.com) - Read-only access to user lists
 
-## Roles & Permissions
+API Documentation
 
-### Roles
+Here is a quick overview of the available endpoints.
 
-| Role | Description |
-|------|-------------|
-| super-admin | Full access to all features |
-| admin | Administrative access |
-| manager | Limited admin access (list, read, create, update users) |
-| user | Basic access (list, read users only) |
+Authentication
+POST /api/auth/register - Register a new account
+POST /api/auth/login - Login to receive an access token
+POST /api/auth/logout - Invalidate current token
+GET /api/auth/me - Get current user profile
 
-### Permissions
+User Management (Requires Permissions)
+GET /api/users - List all users
+POST /api/users - Create a new user
+GET /api/users/{id} - View a specific user
+PUT /api/users/{id} - Update a user
+DELETE /api/users/{id} - Remove a user
+POST /api/users/{id}/assign-roles - Assign roles to a user
 
-| Permission Slug | Description |
-|-----------------|-------------|
-| users-list | View list of users |
-| users-create | Create new users |
-| users-read | View user details |
-| users-update | Update user information |
-| users-delete | Delete users |
-| users-assign-roles | Assign roles to users |
+External Data
+GET /api/external/users - Fetch users from the external JSONPlaceholder API
 
-## API Endpoints
+Useful Commands
 
-### Authentication
+Start containers: docker compose up -d
+Stop containers: docker compose down
+View logs: docker compose logs -f
+Run tests: docker compose exec app php artisan test
+Access database: docker compose exec db psql -U laravel -d rbac_api
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/auth/register` | Register new user | No |
-| POST | `/api/auth/login` | Login user | No |
-| POST | `/api/auth/logout` | Logout user | Yes |
-| GET | `/api/auth/me` | Get current user | Yes |
+License
 
-### Users (Permission Required)
-
-| Method | Endpoint | Description | Permission |
-|--------|----------|-------------|------------|
-| GET | `/api/users` | List all users | users-list |
-| POST | `/api/users` | Create user | users-create |
-| GET | `/api/users/{id}` | Get user by ID | users-read |
-| PUT | `/api/users/{id}` | Update user | users-update |
-| DELETE | `/api/users/{id}` | Delete user | users-delete |
-| POST | `/api/users/{id}/assign-roles` | Assign roles | users-assign-roles |
-
-### Roles (Admin Only)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/roles` | List all roles |
-| POST | `/api/roles` | Create role |
-| GET | `/api/roles/{id}` | Get role by ID |
-| PUT | `/api/roles/{id}` | Update role |
-| DELETE | `/api/roles/{id}` | Delete role |
-| POST | `/api/roles/{id}/assign-permissions` | Assign permissions |
-
-### Permissions (Admin Only)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/permissions` | List all permissions |
-| POST | `/api/permissions` | Create permission |
-| GET | `/api/permissions/{id}` | Get permission by ID |
-| PUT | `/api/permissions/{id}` | Update permission |
-| DELETE | `/api/permissions/{id}` | Delete permission |
-
-### External API
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/external/users` | Fetch external users | Yes |
-
-## Response Format
-
-### Success Response
-
-```json
-{
-  "success": true,
-  "code": 200,
-  "data": {},
-  "message": "Success message"
-}
-```
-
-### Error Response
-
-```json
-{
-  "success": false,
-  "code": 400,
-  "data": {},
-  "message": "Error message"
-}
-```
-
-## Example API Calls
-
-### Register
-
-```bash
-curl -X POST http://localhost:8000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -d '{
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": "password123",
-    "password_confirmation": "password123"
-  }'
-```
-
-### Login
-
-```bash
-curl -X POST http://localhost:8000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "password123"
-  }'
-```
-
-### Get Users (with token)
-
-```bash
-curl -X GET http://localhost:8000/api/users \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
-```
-
-### External API
-
-```bash
-curl -X GET http://localhost:8000/api/external/users \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
-```
-
-## Docker Commands
-
-```bash
-# Start containers
-docker compose up -d
-
-# Stop containers
-docker compose down
-
-# View logs
-docker compose logs -f
-
-# Execute artisan commands
-docker compose exec app php artisan <command>
-
-# Access PostgreSQL
-docker compose exec db psql -U laravel -d rbac_api
-```
-
-## Testing
-
-```bash
-docker compose exec app php artisan test
-```
-
-## Project Structure
-
-```
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/Api/
-│   │   │   ├── AuthController.php
-│   │   │   ├── UserController.php
-│   │   │   ├── RoleController.php
-│   │   │   ├── PermissionController.php
-│   │   │   └── ExternalApiController.php
-│   │   └── Middleware/
-│   │       ├── CheckPermission.php
-│   │       └── CheckRole.php
-│   ├── Models/
-│   │   ├── User.php
-│   │   ├── Role.php
-│   │   └── Permission.php
-│   └── Traits/
-│       └── ApiResponse.php
-├── database/
-│   ├── migrations/
-│   └── seeders/
-│       ├── DatabaseSeeder.php
-│       ├── PermissionSeeder.php
-│       ├── RoleSeeder.php
-│       └── UserSeeder.php
-├── routes/
-│   └── api.php
-├── docker-compose.yml
-├── Dockerfile
-└── README.md
-```
-
-## License
-
-MIT License
+This project is open-sourced software licensed under the MIT license.
