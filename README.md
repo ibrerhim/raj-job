@@ -104,6 +104,23 @@ POST /api/users/{id}/assign-roles - Assign roles to a user
 External Data
 GET /api/external/users - Fetch users from the external JSONPlaceholder API
 
+Testing with Postman
+
+Included in the project is a "postman_collection.json" file that makes testing the API easy.
+
+1. Import Collection
+Open Postman, click "Import" in the top left, and drag in the "postman_collection.json" file from this project folder.
+
+2. Authenticate
+Expand the "Laravel RBAC API" collection, go to the "Auth" folder, and open the "Login" request.
+Click "Send" (the default credentials are for the admin).
+
+3. Token Automation
+A script runs automatically after a successful login to save your access token. You do not need to copy-paste it manually.
+
+4. Test Endpoints
+Now you can run any other request in the collection (like "List Users"). The token will be automatically applied to the Authorization header.
+
 Useful Commands
 
 Start containers: docker compose up -d
@@ -112,6 +129,3 @@ View logs: docker compose logs -f
 Run tests: docker compose exec app php artisan test
 Access database: docker compose exec db psql -U laravel -d rbac_api
 
-License
-
-This project is open-sourced software licensed under the MIT license.
