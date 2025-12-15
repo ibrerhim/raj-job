@@ -5,6 +5,11 @@
 
 echo "--- STARTING LARAVEL APP ---"
 
+# Configure Apache to listen on the Railway-assigned PORT
+PORT=${PORT:-80}
+echo "Configuring Apache to listen on port $PORT..."
+sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
+
 # 1. Attempt to cache config
 echo "Caching config..."
 php artisan config:cache || echo "Config cache failed"
@@ -19,8 +24,7 @@ if [ $? -ne 0 ]; then
     echo "Container will continue starting so you can debug..."
 else
     echo "✅ Migrations successful."
-    
-    # Only generate keys if migration worked (DB is likely accessible)
+    # Only generate keys if migration worked
     php artisan passport:keys || echo "Passport keys generation failed"
 fi
 
@@ -30,5 +34,5 @@ php artisan cache:clear
 php artisan route:clear
 
 # 4. Start Apache
-echo "Starting Apache on port ${PORT:-80}..."
+echo "Starting Apache on port $PORT..."
 apache2-foreground
