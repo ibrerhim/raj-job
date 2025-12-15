@@ -123,9 +123,9 @@ Now you can run any other request in the collection (like "List Users"). The tok
 
 Useful Commands
 
-Start containers: docker compose up -d
+Startt containers: docker compose up -d
 Stop containers: docker compose down
 View logs: docker compose logs -f
 Run tests: docker compose exec app php artisan test
-Access database: docker compose exec db psql -U laravel -d rbac_api
+Access database: docker compose exec db psql -U laravel -d  rbac_api
 
