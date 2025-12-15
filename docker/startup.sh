@@ -1,23 +1,34 @@
 #!/bin/bash
 
-# Exit on fail
-set -e
+# Remove set -e so the container doesn't crash on a single error
+# set -e
 
-# Run migrations
+echo "--- STARTING LARAVEL APP ---"
+
+# 1. Attempt to cache config
+echo "Caching config..."
+php artisan config:cache || echo "Config cache failed"
+
+# 2. Run migrations (with error handling)
 echo "Running migrations..."
 php artisan migrate --force
 
-# Generate Passport Keys if they don't exist
-# (You might want to persist these via Env Vars in production for real persistence,
-# but generating them on startup works for stateless if tokens don't need to persist across restarts ideally)
-php artisan passport:keys
+if [ $? -ne 0 ]; then
+    echo "❌ MIGRATION FAILED!"
+    echo "Check your usage of variables, specifically DB_HOST, DB_USERNAME, DB_PASSWORD."
+    echo "Container will continue starting so you can debug..."
+else
+    echo "✅ Migrations successful."
+    
+    # Only generate keys if migration worked (DB is likely accessible)
+    php artisan passport:keys || echo "Passport keys generation failed"
+fi
 
-# Clear caches
+# 3. Clear other caches
 echo "Clearing caches..."
-php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
 
-# Start Apache in foreground
-echo "Starting Apache..."
+# 4. Start Apache
+echo "Starting Apache on port ${PORT:-80}..."
 apache2-foreground
